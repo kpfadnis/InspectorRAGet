@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inspector-raget-deployment
+  namespace: $(params.deploy-kube-namespace)
+  labels:
+    app: inspector-raget
+spec:
+  selector:
+    matchLabels:
+      app: inspector-raget
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: inspector-raget
+    spec:
+      imagePullSecrets:
+        - name: all-icr-io
+      containers:
+        - name: inspector-raget
+          image: icr.io/hil-tooling/$(params.docker-image-name):$(params.version-name)
+          ports:
+            - containerPort: 3000
