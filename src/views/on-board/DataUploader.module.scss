@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2023-2025 InspectorRAGet Team
+ * Copyright 2023-present InspectorRAGet Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
  **/
 
 @use '@carbon/react/scss/spacing' as *;
-@use '@carbon/colors' as *;
+@use '@carbon/styles/scss/type' as *;
 
 .root {
   margin-top: $spacing-05;
@@ -39,6 +39,14 @@
 .title {
   padding-top: $spacing-03;
   padding-bottom: $spacing-05;
+}
+
+.schemaNotes {
+  @include type-style('helper-text-01');
+
+  color: var(--cds-text-helper);
+  margin-top: $spacing-03;
+  margin-bottom: $spacing-05;
 }
 
 .dataFormat {

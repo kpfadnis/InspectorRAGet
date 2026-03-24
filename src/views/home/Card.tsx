@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2023-2025 InspectorRAGet Team
+ * Copyright 2023-present InspectorRAGet Team
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,14 @@ import classes from './Card.module.scss';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
-const getHeading = (level: HeadingLevel) => `h${level}` as const;
+const HEADING_TAGS = {
+  1: 'h1',
+  2: 'h2',
+  3: 'h3',
+  4: 'h4',
+  5: 'h5',
+  6: 'h6',
+} as const;
 
 export interface CardProps {
   icon: ComponentType<{ size?: number; className?: string }>;
@@ -35,6 +42,7 @@ export interface CardProps {
   href?: string | null;
   actionText?: ReactNode;
   text?: ReactNode;
+  features?: string[];
   content?: ReactNode;
   headingLevel?: HeadingLevel;
   tag?: string | null;
@@ -46,6 +54,7 @@ function Card({
   icon: Icon,
   title,
   text,
+  features,
   href,
   actionText,
   content,
@@ -55,27 +64,24 @@ function Card({
   disabled,
 }: CardProps) {
   const id = useId();
-  const Heading = getHeading(headingLevel);
+  const Heading = HEADING_TAGS[headingLevel];
   return (
     <section className={cx(classes.root, disabled && classes.disabled)}>
       {href && actionText && (
-        <Link
-          href={disabled ? 'javascript:void(0)' : href}
-          legacyBehavior
-          passHref
+        // Carbon's Link strips `href` when disabled, which breaks Next.js Link
+        // (it requires `href`). Use a plain Carbon Link for disabled cards.
+        <CarbonLink
+          {...(!disabled && { as: Link, href })}
+          className={classes.link}
+          renderIcon={openInNewTab ? Launch : ArrowRight}
+          target={openInNewTab ? '_blank' : undefined}
+          disabled={disabled}
         >
-          <CarbonLink
-            className={classes.link}
-            renderIcon={openInNewTab ? Launch : ArrowRight}
-            target={openInNewTab ? '_blank' : undefined}
-            disabled={disabled}
-          >
-            {actionText}
-          </CarbonLink>
-        </Link>
+          {actionText}
+        </CarbonLink>
       )}
       <div className={classes.body}>
-        <Icon className={classes.icon} size={24} />
+        <Icon className={classes.icon} size={32} />
         <Heading className={classes.heading}>
           {title}
           {tag && (
@@ -85,6 +91,13 @@ function Card({
           )}
         </Heading>
         {!!text && <p className={classes.text}>{text}</p>}
+        {features && features.length > 0 && (
+          <ul className={classes.features}>
+            {features.map((f) => (
+              <li key={f}>{f}</li>
+            ))}
+          </ul>
+        )}
         {!!content && <div className={classes.content}>{content}</div>}
       </div>
     </section>

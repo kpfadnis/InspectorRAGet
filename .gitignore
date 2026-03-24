@@ -10,14 +10,35 @@
 # NPM
 node_modules
 
-# NPM lock files
-package-lock.json
+# Environment files
+.env
+.env.*
+
+# Deployment artifacts
+.npm-install-hash
 
 # Next files
 .next
+next-env.d.ts
+
+# TypeScript incremental build cache
+*.tsbuildinfo
 
 # Husky files
 .husky
 
 # Dist files
 dist
+
+# Downloaded benchmark datasets (populated by converters/*/download_dataset.sh)
+converters/*/dataset/
+
+# Python bytecode cache
+converters/**/__pycache__/
+
+# Local benchmark run outputs for converter testing
+converters/*/runs/
+
+# Development tracking files (local only)
+CLAUDE.md
+.claude

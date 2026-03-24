@@ -1,279 +1,311 @@
 # InspectorRAGet
 
-InspectorRAGet, an introspection platform for RAG evaluation. InspectorRAGet allows the user to analyze aggregate and instance-level performance of RAG systems, using both human and algorithmic metrics as well as annotator quality.
+InspectorRAGet is an introspection platform for evaluating LLM-based systems. It lets researchers upload evaluation result files and explore aggregate and instance-level performance across models, metrics, and annotators. It supports retrieval-augmented generation (RAG), text generation, multi-turn conversation, function-calling, and agentic task evaluation.
 
-InspectorRAGet has been developed as a [React](https://react.dev/) web application built with [NextJS 14](https://nextjs.org/) framework and the [Carbon Design System](https://carbondesignsystem.com/).
+InspectorRAGet is built with [React](https://react.dev/), [Next.js 16](https://nextjs.org/), and the [IBM Carbon Design System](https://carbondesignsystem.com/).
 
-## 🎥 Demo
+## Demo
+
 [![InspectorRAGet on the case!](https://img.youtube.com/vi/vB7mJnSNx7s/0.jpg)](https://www.youtube.com/watch?v=vB7mJnSNx7s)
 
-## 🏗️ Build & Deploy
+## Build and Deploy
 
-To install and run InspectorRAGet follow the steps below:
+### Requirements
+
+Node.js >= 24.0.0
 
 ### Installation
-We use yarn as a default package manager. 
 
 ```shell
-yarn install
+npm install
 ```
-⚠️ node version must be `20.12.0` or higher.
 
 ### Development server
-To start InspectorRAGet in development mode, please run the following command.
 
 ```shell
-yarn dev
+npm run dev
 ```
 
-### Build
-To build a static production bundle, please run the following command.
+### Production build
+
 ```shell
-yarn build
+npm run build
 ```
 
 ### Production server
-To start InspectorRAGet in production mode, please run the following command.
+
 ```shell
-yarn start
+npm start
 ```
 
-##  Usage
+## Usage
 
-Once you have started InspectorRAGet, the next step is import a json file with the evaluation results in the format expected by the platform. You can do this in two ways:
-- Use one of our [integration notebooks](#use-inspectorraget-through-integration-notebooks), showing how to use InspectorRAGet in combination with popular evaluation frameworks.
-- Manually convert the evaluation results into the expected format by consulting the [documentation of InspectorRAGet's file format](#use-inspectorraget-by-manually-creating-input-file).
+Once InspectorRAGet is running, import a JSON file with evaluation results. Two paths are available:
 
-## Use InspectorRAGet through integration notebooks
+- Use one of the [integration notebooks](#integration-notebooks) to convert output from a popular evaluation framework.
+- Manually convert your results using the [file format reference](#file-format-reference) below.
 
-To make it easier to get started, we have created notebooks showcasing how InspectorRAGet can be used in combination with popular evaluation frameworks. Each notebook demonstrates how to use the corresponding framework to run an evaluation experiment and transform its output to the input format expected by InspectorRAGet for analysis. We provide notebooks demonstrating integrations of InspectorRAGet with the following popular frameworks:
+## Integration Notebooks
 
-| Framework | Description | Integration Notebook |
-| --- | --- | --- |
-| Language Model Evaluation Harness | Popular evaluation framework used to evaluate language models on different tasks | [LM_Eval_Demonstration.ipynb](notebooks/LM_Eval_Demonstration.ipynb) |
-| Ragas | Popular evaluation framework specifically designed for the evaluation of RAG systems through LLM-as-a-judge techniques | [Ragas_Demonstration.ipynb](notebooks/Ragas_Demonstration.ipynb) |
-| HuggingFace | Offers libraries and assets (incl. datasets, models, and metric evaluators) that can be used to both create and evaluate RAG systems | [HuggingFace_Demonstration.ipynb](notebooks/HuggingFace_Demonstration.ipynb) |
+The notebooks below show how to run an evaluation experiment with a popular framework and transform its output into the format InspectorRAGet expects.
 
-## Use InspectorRAGet by manually creating input file
+| Framework                         | Description                                     | Notebook                                                                     |
+| --------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| Language Model Evaluation Harness | General-purpose LM evaluation framework         | [LM_Eval_Demonstration.ipynb](notebooks/LM_Eval_Demonstration.ipynb)         |
+| Ragas                             | LLM-as-a-judge evaluation for RAG systems       | [Ragas_Demonstration.ipynb](notebooks/Ragas_Demonstration.ipynb)             |
+| HuggingFace                       | Datasets, models, and metric evaluators for RAG | [HuggingFace_Demonstration.ipynb](notebooks/HuggingFace_Demonstration.ipynb) |
 
-If you want to use your own code/framework, not covered by the integration notebooks above, to run the evaluation, you can manually transform the evaluation results to the input format expected by InspectorRAGet, described below. Examples of input files in the expected format can be found in the [data](data) folder.  
+## Benchmark Converters
 
-The experiment results json file expected by InspectorRAGet can be broadly split into six sections along their functional boundaries. The first section captures general details about the experiment in `name`, `description` and `timestamp` fields. The second and third sections describe the
-sets of models and metrics used in the experiment via the `models` and `metrics` fields, respectively. The last three sections cover the dataset and the outcome of evaluation experiment in the form of `documents`, `tasks` and `evaluations` fields.
+Stand-alone Python converters for specific benchmarks live in the `converters/` directory.
 
-#### 1. Metadata
+| Benchmark                | Task type      | Converter                            |
+| ------------------------ | -------------- | ------------------------------------ |
+| BFCL v3/v4 (single-turn) | `tool_calling` | [converters/bfcl/](converters/bfcl/) |
+| BFCL v3/v4 (multi-turn)  | `agentic`      | [converters/bfcl/](converters/bfcl/) |
+
+## File Format Reference
+
+The JSON file InspectorRAGet accepts is structured in six sections. Examples are in the [`data/`](data/) directory.
+
+### 1. Metadata
 
 ```json
 {
-    "name": "Sample experiment name",
-    "description": "Sample example description",
-    ...
+  "schema_version": 2,
+  "name": "My experiment",
+  "description": "Optional description",
+  "timestamp": 1700000000
+}
 ```
 
-#### 2. Models
+### 2. Models
 
 ```json
-    "models": [
-      {
-        "model_id": "model_1",
-        "name": "Model 1",
-        "owner": "Model 1 owner",
-      },
-      {
-        "model_id": "model_2",
-        "name": "Model 2",
-        "owner": "Model 2 owner",
-      }
-    ],
-```
-
-Notes: 
-
-1. Each model must have a unique `model_id` and `name`. 
-
-#### 3. Metrics
-
-```json
-      "numerical": [
-            {
-            "name": "metric_a",
-            "display_name": "Metric A",
-            "description": "Metric A description",
-            "author": "algorithm | human",
-            "type": "numerical",
-            "aggregator": "average",
-            "range": [0, 1, 0.1]
-            },
-            {
-            "name": "metric_b",
-            "display_name": "Metric B",
-            "description": "Metric B description",
-            "author": "algorithm | human",
-            "type": "categorical",
-            "aggregator": "majority | average",
-            "values": [
-                  {
-                        "value": "value_a",
-                        "display_value": "A",
-                        "numeric_value": 1
-                  },
-                  {
-                        "value": "value_b",
-                        "display_value": "B",
-                        "numeric_value": 0
-                  }
-                ]
-            },
-            {
-            "name": "metric_c",
-            "display_name": "Metric C",
-            "description": "Metric C description",
-            "author": "algorithm | human",
-            "type": "text"
-            }
-      ],
-```
-Notes:
-
-1. Each metric must have a unique name.
-2. Metric can be of `numerical`, `categorical`, or `text` type. 
-3. Numerical type metrics must specify `range` field in `[start, end, bin_size]` format. 
-4. Categoricl type metrics must specify `values` field where each value must have `value` and `numerical_value` fields.
-5. Text type metric are only accesible in instance level view and not used in any experiment level aggregate statistics and visual elements.
-
-#### 4. Documents
-
-```json
-      "documents": [
-            {
-                  "document_id": "GUID 1",
-                  "text": "document text 1",
-                  "title": "document title 1"
-            },
-            {
-                  "document_id": "GUID 2",
-                  "text": "document text 2",
-                  "title": "document title 2"
-            },
-            {
-                  "document_id": "GUID 3",
-                  "text": "document text 3",
-                  "title": "document title 3"
-            }
-      ],
-```
-Notes:
-
-1. Each document must have a unique `document_id` field.
-2. Each document must have a `text` field.
-
-#### 5. Tasks
-
-```json
-      "filters": ["category"],
-      "tasks": [
-            {
-                  "task_id": "task_1",
-                  "task_type": "rag",
-                  "category": "grounded",
-                  "input": [
-                        {
-                              "speaker": "user",
-                              "text": "Sample user query"
-                        }
-                  ],
-                  "contexts": [
-                        {
-                              "document_id": "GUID 1"
-                        }
-                  ],
-                  "targets": [
-                        {
-                              "text": "Sample response"
-                        }
-                  ]
-            },
-            {
-                  "task_id": "task_2",
-                  "task_type": "rag",
-                  "category": "random",
-                  "input": [
-                        {
-                              "speaker": "user", 
-                              "text": "Hello"
-                        }
-                  ],
-                  "contexts": [
-                        {
-                              "document_id": "GUID 2"
-                        }
-                  ],
-                  "targets": [
-                        {
-                              "text": "How can I help you?"
-                        }
-                  ]
-            }
-      ],
-```
-Notes: 
-
-1. Each task must have a unique `task_id`.
-2. Task type can be of `rag`, or of `text_generation`, or of `chat` type.
-3. For `rag` and `text_generation` type task, `input` is an array of utterances. An utterance's speaker could be either `user` or `agent`. Each utterance must have a `text` field.
-4. For `chat` type task, `input` must be array of messages as defined by OpenAI's chat completion APIs (https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages).
-4. For `rag` task, `contexts` field represents a subset of documents from the `documents` field relevant to the `input` and is available to the generative models. 
-5. `targets` field is an array of expected gold or reference texts. 
-6. `category` is an optional field that represents the type of task for grouping similar tasks.
-7. `filters` is a top-level field (parallel to `tasks`) which specifies an array of fields defined inside `tasks` for filtering tasks during analysis. 
-
-#### 6. Evaluations
-
-```json
-"evaluations": [
-      {
-            "task_id": "task_1 | task_2",
-            "model_id": "model_1 | model_2",
-            "model_response": "Model response",
-            "annotations": {
-                  "metric_a": {
-                        "system": {
-                              "value": 0.233766233766233
-                        }
-                  },
-                  "metric_b": {
-                        "system": {
-                              "value": "value_a | value_b"
-                        }
-                  },
-                  "metric_c": {
-                        "system": {
-                              "value": "text"
-                        }
-                  },
-            }
-      }
+"models": [
+  { "model_id": "model_a", "name": "Model A", "owner": "Owner A" },
+  { "model_id": "model_b", "name": "Model B", "owner": "Owner B" }
 ]
 ```
+
+Each model must have a unique `model_id` and `name`.
+
+### 3. Metrics
+
+```json
+"metrics": [
+  {
+    "name": "accuracy",
+    "display_name": "Accuracy",
+    "description": "Fraction of correct answers",
+    "author": "algorithm",
+    "type": "numerical",
+    "aggregator": "average",
+    "range": [0, 1, 0.1]
+  },
+  {
+    "name": "quality",
+    "display_name": "Quality",
+    "author": "human",
+    "type": "categorical",
+    "aggregator": "majority",
+    "values": [
+      { "value": "poor",       "display_value": "Poor",       "numeric_value": 0 },
+      { "value": "acceptable", "display_value": "Acceptable", "numeric_value": 1 },
+      { "value": "good",       "display_value": "Good",       "numeric_value": 2 }
+    ]
+  },
+  {
+    "name": "error_detail",
+    "display_name": "Error Detail",
+    "author": "algorithm",
+    "type": "text"
+  }
+]
+```
+
 Notes:
 
-1. `evaluations` field must contain evaluation for every model defined in `models` section and on every task in `tasks` section. Thus, total number of evaluations is equal to number of models (M) X number of tasks (T) = M X T
-2. Each evaluation must be associated with single task and single model.
-3. Each evaluation must have model prediction on a task captured in the `model_response` field. 
-4. `annotations` field captures ratings on the model for a given task and for every metric specified in the `metrics` field.
-5. Each metric annotation is a dictionary containing worker ids as keys. In the example above, `system` is a worker id. 
-6. Annotation from any worker on all metrics must be in the form of a dictionary. At minimum, such dictionary contains `value` key capturing model's rating for the metric by the worker. 
+1. Each metric must have a unique `name`.
+2. `type` is one of `numerical`, `categorical`, or `text`.
+3. Numerical metrics require a `range` field in `[start, end, bin_size]` format. Values below `start` are grouped into a `<start` bin and values above `end` into a `>end` bin, so outliers never create unbounded individual bars in the distribution chart.
+4. Categorical metrics require a `values` array. Every entry must have a `value` (string label) and a `numeric_value` (number). Assign values so that higher means better (e.g. `poor=0, good=2`). The platform uses `numeric_value` for aggregation, sorting, and chart scaling.
+5. Text metrics appear only in the instance view and are excluded from aggregate statistics.
+
+### 4. Documents
+
+```json
+"documents": [
+  { "document_id": "doc-1", "text": "Document text", "title": "Optional title" }
+]
+```
+
+Each document must have a unique `document_id` and a `text` field. Documents are referenced from task `contexts`.
+
+### 5. Tasks
+
+The `task_type` field determines how a task is displayed and what fields are expected.
+
+```json
+"filters": ["category"],
+"tasks": [
+  {
+    "task_id": "task-1",
+    "task_type": "qa",
+    "category": "factual",
+    "input": [{ "role": "user", "content": "What is the capital of France?" }],
+    "contexts": [{ "document_id": "doc-1" }],
+    "targets": [{ "type": "text", "value": "Paris" }]
+  },
+  {
+    "task_id": "task-2",
+    "task_type": "generation",
+    "input": [{ "role": "user", "content": "Summarise this document." }],
+    "targets": [{ "type": "text", "value": "Expected summary..." }]
+  },
+  {
+    "task_id": "task-3",
+    "task_type": "rag",
+    "input": [
+      { "role": "user",      "content": "First question" },
+      { "role": "assistant", "content": "First answer" },
+      { "role": "user",      "content": "Follow-up question" }
+    ],
+    "contexts": [{ "document_id": "doc-1" }],
+    "targets": [{ "type": "text", "value": "Expected answer" }]
+  },
+  {
+    "task_id": "task-4",
+    "task_type": "tool_calling",
+    "input": [{ "role": "user", "content": "What is the weather in Paris?" }],
+    "tools": [
+      {
+        "name": "get_weather",
+        "description": "Get current weather for a city",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "city": { "type": "string", "description": "City name" }
+          },
+          "required": ["city"]
+        }
+      }
+    ],
+    "targets": [
+      {
+        "type": "tool_calls",
+        "calls": [{ "id": "c1", "name": "get_weather", "arguments": { "city": "Paris" } }]
+      }
+    ]
+  },
+  {
+    "task_id": "task-5",
+    "task_type": "agentic",
+    "input": [{ "role": "user", "content": "Book a flight from NYC to London on June 10." }],
+    "contexts": [{ "document_id": "policy-doc-1" }],
+    "tools": [
+      { "name": "search_flights", "description": "Search available flights", "parameters": { "type": "object", "properties": { "origin": { "type": "string" }, "destination": { "type": "string" }, "date": { "type": "string" } }, "required": ["origin", "destination", "date"] } },
+      { "name": "book_flight",    "description": "Book a selected flight",   "parameters": { "type": "object", "properties": { "flight_id": { "type": "string" } }, "required": ["flight_id"] } }
+    ],
+    "targets": [{ "type": "state", "value": { "booking_confirmed": true, "flight_date": "2025-06-10" } }]
+  }
+]
+```
+
+**Task types:**
+
+| Type           | Description                              | `input`                                  | `targets`                                               |
+| -------------- | ---------------------------------------- | ---------------------------------------- | ------------------------------------------------------- |
+| `qa`           | Single-turn retrieval QA                 | `Message[]` (one user message)           | `{ type: "text", value }`                               |
+| `generation`   | Text or structured generation            | `Message[]` (one user message)           | `{ type: "text", value }`                               |
+| `rag`          | Multi-turn retrieval conversation        | `Message[]` (alternating user/assistant) | `{ type: "text", value }`                               |
+| `tool_calling` | Single-turn function-calling prediction  | `Message[]`                              | `{ type: "tool_calls", calls, alternatives? }`          |
+| `agentic`      | Goal-directed multi-turn agent execution | `Message[]` (goal as last user message)  | `{ type: "state", value }` or `{ type: "text", value }` |
+
+All `input` arrays use OpenAI-compatible message objects: `{ "role": "user"|"assistant"|"tool"|"system", "content": "..." }`. Assistant messages may include `"tool_calls"` and tool messages must include `"tool_call_id"`.
+
+The `filters` array (parallel to `tasks`) names task fields to expose as filter controls during analysis.
+
+### 6. Results
+
+```json
+"results": [
+  {
+    "task_id": "task-1",
+    "model_id": "model_a",
+    "output": [
+      { "role": "assistant", "content": "Paris" }
+    ],
+    "scores": {
+      "accuracy": { "system": { "value": 1.0 } },
+      "quality":  { "annotator_1": { "value": "good" } }
+    }
+  },
+  {
+    "task_id": "task-4",
+    "model_id": "model_a",
+    "output": [
+      {
+        "role": "assistant",
+        "tool_calls": [{ "id": "c1", "name": "get_weather", "arguments": { "city": "Paris" } }]
+      }
+    ],
+    "scores": {
+      "accuracy": { "system": { "value": 1.0 } }
+    }
+  },
+  {
+    "task_id": "task-5",
+    "model_id": "model_a",
+    "output": [
+      { "role": "assistant", "tool_calls": [{ "id": "c1", "name": "search_flights", "arguments": { "origin": "JFK", "destination": "LHR", "date": "2025-06-10" } }] },
+      { "role": "tool", "tool_call_id": "c1", "content": "[{\"flight_id\": \"BA112\", \"price\": 450}]" },
+      { "role": "assistant", "tool_calls": [{ "id": "c2", "name": "book_flight", "arguments": { "flight_id": "BA112" } }] },
+      { "role": "tool", "tool_call_id": "c2", "content": "{\"booking_confirmed\": true}" },
+      { "role": "assistant", "content": "Your flight has been booked." }
+    ],
+    "scores": {
+      "task_success": { "system": { "value": 1.0 } }
+    }
+  }
+]
+```
+
+Notes:
+
+1. `results` must contain one entry for every (model, task) pair. Total entries equal number of models times number of tasks.
+2. `output` is an array of `Message` objects.
+   - For `qa`, `generation`, `rag`, and `tool_calling` tasks this is a single-element array containing the model's response.
+   - For `agentic` tasks this is the full execution thread: interleaved `assistant`, `tool`, and `user` messages in turn order.
+   - Assistant messages may optionally carry `"steps"` (thinking/execution trace) and `"retries"` (rejected attempts before the final output).
+3. `scores` contains per-metric ratings. Each metric entry is a map from evaluator or annotator ID to `{ "value": <number or string> }`.
 
 ## Citation
+
 If you use InspectorRAGet in your research, please cite our paper:
 
 ```
-@misc{fadnis2024inspectorraget,
-      title={InspectorRAGet: An Introspection Platform for RAG Evaluation}, 
-      author={Kshitij Fadnis and Siva Sankalp Patel and Odellia Boni and Yannis Katsis and Sara Rosenthal and Benjamin Sznajder and Marina Danilevsky},
-      year={2024},
-      eprint={2404.17347},
-      archivePrefix={arXiv},
-      primaryClass={cs.SE}
+@inproceedings{fadnis-etal-2025-inspectorraget,
+    title = "{I}nspector{RAG}et: An Introspection Platform for {RAG} Evaluation",
+    author = "Fadnis, Kshitij P  and
+      Patel, Siva Sankalp  and
+      Boni, Odellia  and
+      Katsis, Yannis  and
+      Rosenthal, Sara  and
+      Sznajder, Benjamin  and
+      Danilevsky, Marina",
+    editor = "Dziri, Nouha  and
+      Ren, Sean (Xiang)  and
+      Diao, Shizhe",
+    booktitle = "Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (System Demonstrations)",
+    month = apr,
+    year = "2025",
+    address = "Albuquerque, New Mexico",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.naacl-demo.13/",
+    doi = "10.18653/v1/2025.naacl-demo.13",
+    pages = "125--134",
+    ISBN = "979-8-89176-191-9",
+    abstract = "Large Language Models (LLM) have become a popular approach for implementing Retrieval Augmented Generation (RAG) systems, and a significant amount of effort has been spent on building good models and metrics. In spite of increased recognition of the need for rigorous evaluation of RAG systems, few tools exist that go beyond the creation of model output and automatic calculation. We present InspectorRAGet, an introspection platform for performing a comprehensive analysis of the quality of RAG system output. InspectorRAGet allows the user to analyze aggregate and instance-level performance of RAG systems, using both human and algorithmic metrics as well as annotator quality. InspectorRAGet is suitable for multiple use cases and is available publicly to the community.A live instance of the platform is available at https://ibm.biz/InspectorRAGet"
 }
 ```
